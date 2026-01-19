@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Donut Market</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0b0b10;
+      --card-bg: #14141f;
+      --accent: #ff6b9c;
+      --accent-soft: #ffb3cd;
+      --text-main: #ffffff;
+      --text-muted: #a0a0b8;
+      --border-subtle: #26263a;
+      --radius-lg: 24px;
+      --radius-md: 14px;
+      --radius-pill: 999px;
+      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.55);
+      --shadow-chip: 0 10px 25px rgba(0, 0, 0, 0.45);
+      --blur-bg: blur(18px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1b1230 0, #050509 55%, #020207 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .noise {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      opacity: 0.08;
+      mix-blend-mode: soft-light;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.7'/%3E%3C/svg%3E");
+      z-index: -1;
+    }
+
+    .glow {
+      position: fixed;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 107, 156, 0.35), transparent 60%);
+      top: -80px;
+      right: -40px;
+      filter: blur(4px);
+      opacity: 0.9;
+      z-index: -2;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1120px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 32px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 880px) {
+      body {
+        padding: 24px 16px;
+      }
+      .container {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #1c1c2b 0, #10101a 55%, #090912 100%);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-soft);
+      padding: 26px 26px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.06),
+        transparent 40%,
+        transparent 60%,
+        rgba(255, 255, 255, 0.02)
+      );
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(10, 10, 20, 0.7);
+      backdrop-filter: var(--blur-bg);
+      color: var(--text-muted);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--accent) 0, #ff3b7a 60%, transparent 100%);
+      box-shadow: 0 0 12px rgba(255, 107, 156, 0.9);
+    }
+
+    .pill-label-strong {
+      color: var(--accent-soft);
+      font-weight: 600;
+    }
+
+    h1 {
+      font-size: clamp(32px, 4vw, 40px);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 10px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(120deg, #ffffff, #ffb3cd, #ffd6e7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 420px;
+      margin-bottom: 22px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .btn-primary {
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 10px 18px;
+      border-radius: var(--radius-pill);
+      background: linear-gradient(135deg, #ff6b9c, #ff3b7a);
+      color: #050308;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 14px 30px rgba(255, 59, 122, 0.45);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 40px rgba(255, 59, 122, 0.6);
+      filter: brightness(1.05);
+    }
+
+    .btn-primary span.icon {
+      font-size: 16px;
+      transform: translateY(1px);
+    }
+
+    .btn-ghost {
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(10, 10, 20, 0.6);
+      color: var(--text-main);
+      padding: 9px 14px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      backdrop-filter: var(--blur-bg);
+      transition: background 0.12s ease, border-color 0.12s ease;
+    }
+
+    .btn-ghost:hover {
+      background: rgba(20, 20, 35, 0.9);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-ghost-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #3bffb3;
+      box-shadow: 0 0 10px rgba(59, 255, 179, 0.9);
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(10, 10, 20, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      backdrop-filter: var(--blur-bg);
+    }
+
+    .meta-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ffb3cd;
+    }
+
+    .meta-strong {
+      color: #ffffff;
+      font-weight: 500;
+    }
+
+    .divider {
+      height: 1px;
+      width: 100%;
+      background: linear-gradient(
+        to right,
+        transparent,
+        rgba(255, 255, 255, 0.16),
+        transparent
+      );
+      margin: 12px 0 16px;
+    }
+
+    .footer-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .avatar-stack {
+      display: flex;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid #050308;
+      background: linear-gradient(135deg, #ff6b9c, #ffd6e7);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #050308;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.7);
+    }
+
+    .avatar + .avatar {
+      margin-left: -8px;
+    }
+
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tag {
+      padding: 4px 9px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(10, 10, 20, 0.7);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Right column */
+
+    .side-card {
+      background: radial-gradient(circle at top right, #24152f 0, #10101a 55%, #07070f 100%);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-soft);
+      padding: 22px 22px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .side-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.04),
+        transparent 40%,
+        transparent 70%,
+        rgba(255, 255, 255, 0.02)
+      );
+      pointer-events: none;
+    }
+
+    .side-inner {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .logo-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 10px;
+      background: conic-gradient(
+        from 210deg,
+        #ff6b9c,
+        #ffd6e7,
+        #ffb3cd,
+        #ff6b9c,
+        #ff3b7a
+      );
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #050308;
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.7);
+    }
+
+    .logo-text {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .logo-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .status-chip {
+      padding: 5px 9px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(10, 10, 20, 0.7);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #3bffb3;
+      box-shadow: 0 0 10px rgba(59, 255, 179, 0.9);
+    }
+
+    .donut-hero {
+      position: relative;
+      margin-top: 6px;
+      margin-bottom: 4px;
+    }
+
+    .donut {
+      width: 100%;
+      max-width: 260px;
+      margin: 0 auto;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 30%, #ffffff, #ffd6e7 40%, #ff6b9c 70%, #ff3b7a 100%);
+      box-shadow:
+        0 26px 60px rgba(0, 0, 0, 0.85),
+        0 0 40px rgba(255, 107, 156, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .donut-hole {
+      position: absolute;
+      inset: 26%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #0b0b10, #050308 70%);
+      box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.9);
+    }
+
+    .sprinkle {
+      position: absolute;
+      width: 26px;
+      height: 6px;
+      border-radius: 999px;
+      background: #ffffff;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+      opacity: 0.9;
+    }
+
+    .sprinkle:nth-child(1) {
+      top: 24%;
+      left: 18%;
+      transform: rotate(-18deg);
+      background: #ffe66b;
+    }
+
+    .sprinkle:nth-child(2) {
+      top: 18%;
+      right: 18%;
+      transform: rotate(22deg);
+      background: #6bffb3;
+    }
+
+    .sprinkle:nth-child(3) {
+      bottom: 22%;
+      left: 24%;
+      transform: rotate(14deg);
+      background: #6bb8ff;
+    }
+
+    .sprinkle:nth-child(4) {
+      bottom: 18%;
+      right: 22%;
+      transform: rotate(-24deg);
+      background: #ffffff;
+    }
+
+    .sprinkle:nth-child(5) {
+      top: 46%;
+      left: 10%;
+      transform: rotate(90deg);
+      background: #ffb3cd;
+    }
+
+    .sprinkle:nth-child(6) {
+      top: 46%;
+      right: 10%;
+      transform: rotate(-90deg);
+      background: #ffe66b;
+    }
+
+    .donut-orbit {
+      position: absolute;
+      inset: -10%;
+      border-radius: 50%;
+      border: 1px dashed rgba(255, 255, 255, 0.12);
+      opacity: 0.7;
+    }
+
+    .donut-label {
+      position: absolute;
+      bottom: 8%;
+      right: 10%;
+      padding: 6px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(10, 10, 20, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      font-size: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: var(--blur-bg);
+    }
+
+    .donut-label-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ffb3cd;
+    }
+
+    .side-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .stat-card {
+      padding: 8px 9px;
+      border-radius: var(--radius-md);
+      background: rgba(10, 10, 20, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      backdrop-filter: var(--blur-bg);
+      box-shadow: var(--shadow-chip);
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stat-value {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .stat-pill {
+      padding: 2px 6px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.06);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      align-self: flex-start;
+    }
+
+    .side-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .side-footer-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .side-footer-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mini-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ff6b9c;
+      box-shadow: 0 0 8px rgba(255, 107, 156, 0.9);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="glow"></div>
+
+  <main class="container">
+    <!-- Left card: main copy -->
+    <section class="card">
+      <div class="card-inner">
+        <div class="pill">
+          <div class="pill-dot"></div>
+          <span>Sweet infrastructure for digital goods</span>
+          <span class="pill-label-strong">Donut Market</span>
+        </div>
+
+        <h1>
+          A <span class="gradient-text">deliciously simple</span><br />
+          way to sell digital products.
+        </h1>
+
+        <p class="subtitle">
+          Donut Market is a playful, high-conversion storefront for creators, studios, and indie hackers
+          who want to ship fast without wrestling with code.
+        </p>
+
+        <div class="cta-row">
+          <button class="btn-primary">
+            <span>Get early access</span>
+            <span class="icon">→</span>
+          </button>
+
+          <button class="btn-ghost">
+            <span class="btn-ghost-dot"></span>
+            <span>Join the waitlist</span>
+          </button>
+        </div>
+
+        <div class="meta-row">
+          <div class="meta-item">
+            <span class="meta-dot"></span>
+            <span class="meta-strong">No-code setup</span>
+            <span>in under 5 minutes</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-dot"></span>
+            <span class="meta-strong">Zero fees</span>
+            <span>on your first $1k</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-dot"></span>
+            <span class="meta-strong">Built for creators</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="footer-row">
+          <div class="footer-left">
+            <div class="avatar-stack">
+              <div class="avatar">A</div>
+              <div class="avatar">K</div>
+              <div class="avatar">J</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 500;">Loved by early testers</div>
+              <div style="font-size: 10px; color: var(--text-muted);">
+                “The most fun checkout we’ve ever used.”
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-right">
+            <div class="tag">Creator-first</div>
+            <div class="tag">API-friendly</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right card: visual + stats -->
+    <aside class="side-card">
+      <div class="side-inner">
+        <div class="logo-row">
+          <div class="logo-mark">
+            <div class="logo-icon">🍩</div>
+            <div>
+              <div class="logo-text">Donut</div>
+              <div class="logo-sub">Market</div>
+            </div>
+          </div>
+          <div class="status-chip">
+            <span class="status-dot"></span>
+            <span>Private beta</span>
+          </div>
+        </div>
+
+        <div class="donut-hero">
+          <div class="donut">
+            <div class="donut-hole"></div>
+            <div class="sprinkle"></div>
+            <div class="sprinkle"></div>
+            <div class="sprinkle"></div>
+            <div class="sprinkle"></div>
+            <div class="sprinkle"></div>
+            <div class="sprinkle"></div>
+            <div class="donut-orbit"></div>
+            <div class="donut-label">
+              <div class="donut-label-dot"></div>
+              <span>Optimized checkout</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-stats">
+          <div class="stat-card">
+            <div class="stat-label">Conversion lift</div>
+            <div class="stat-value">+23%</div>
+            <div class="stat-pill">A/B tested</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Time to launch</div>
+            <div class="stat-value">4 min</div>
+            <div class="stat-pill">No code</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Creators onboard</div>
+            <div class="stat-value">312</div>
+            <div class="stat-pill">Beta</div>
+          </div>
+        </div>
+
+        <div class="side-footer">
+          <div class="side-footer-left">
+            <span>Stripe, Lemon Squeezy & more supported.</span>
+            <span>Bring your stack, keep your brand.</span>
+          </div>
+          <div class="side-footer-right">
+            <span class="mini-dot"></span>
+            <span>Launching Q2 · 2026</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+</body>
+</html>
